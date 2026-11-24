@@ -29,6 +29,26 @@ SENTENCE = (
     "and strangers half a world away write back."
 )
 
+# Words coined after 1800 that must never appear in the sentence.
+BANNED_AFTER_1800 = (
+    "internet", "computer", "website", "online", "digital", "email",
+    "telephone", "telegraph", "television", "radio", "airplane",
+    "automobile", "electricity", "photo", "video", "software",
+)
+
+
+def validate(text):
+    """Gate the sentence before it is written: one sentence, at most
+    200 characters, and no word coined after the traveler's year."""
+    if not (1 <= len(text) <= 200):
+        raise ValueError("sentence must be 1-200 characters, got %d" % len(text))
+    if text.count(".") != 1 or not text.endswith("."):
+        raise ValueError("entry must be exactly one sentence")
+    lowered = text.lower()
+    for word in BANNED_AFTER_1800:
+        if word in lowered:
+            raise ValueError("post-1800 word in entry: %s" % word)
+
 
 def output_path():
     target = os.environ.get("ENTRY_OUTPUT") or "/output/entry.txt"
@@ -43,8 +63,7 @@ def main():
     if parent:
         os.makedirs(parent, exist_ok=True)
     text = SENTENCE
-    assert 1 <= len(text) <= 200, len(text)
-    assert text.count(".") == 1, "must be exactly one sentence"
+    validate(text)
     with open(dest, "w", encoding="utf-8") as f:
         f.write(text)
 
